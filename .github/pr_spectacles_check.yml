@@ -1,0 +1,59 @@
+name: pr_spectacles_check
+
+on:
+  pull_request:
+    branches:
+      - master
+
+env:
+  LOOKER_BASE_URL: https://openfarm.cloud.looker.com/
+  LOOKER_CLIENT_ID: ${{ secrets.LOOKER_CLIENT_ID }}
+  LOOKER_CLIENT_SECRET: ${{ secrets.LOOKER_CLIENT_SECRET }} 
+  LOOKER_PROJECT: openfarm_snowflake
+  LOOKER_GIT_BRANCH: ${{ github.head_ref }}
+  SPECTACLES_REMOTE_RESET: true
+  SPECTACLES_CONFIG_FILE: spectacles_config.yaml
+  #creds for client id & client secret saved on BitWarden, obtain from Spectacle User with email hanh.ttb@solutions.com on Looker
+
+jobs:
+  pr_spectacles_check:
+    name: pr_spectacles_check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out feature branch
+        uses: actions/checkout@main
+
+      - name: Set up python environment
+        uses: actions/setup-python@v1
+        with:
+          python-version: "3.10.x"
+
+      - name: Install dependencies
+        run: |
+          pip3 install -r requirements.txt
+
+      - name: LookML Validator
+        if: ${{ success() || failure() }}
+        run: |
+          spectacles lookml
+
+      # - name: SQL Validator, runs in incremental mode
+        # if: ${{ success() || failure() }}
+        # run: |
+          # spectacles sql --incremental
+
+      - name: Assert Validator
+        if: ${{ success() || failure() }}
+        # modify the exit code for `spectacles assert`, when no test is found, it will exit with 100, convert to 0 to inform github that it passes
+        # !NOTE: workaround only, to adjust once official update is released
+        run: |
+          if spectacles assert 2>&1 >/dev/null | grep -q 'No data tests found'
+            then exit 0
+            else spectacles assert
+          fi
+
+      # - name: Content Validator, runs in incremental mode
+      #   if: ${{ success() || failure() }}
+      #   run: |
+      #     spectacles content --incremental
