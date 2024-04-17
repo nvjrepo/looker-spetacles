@@ -2,7 +2,7 @@
 view: fct_ga_sessions {
   # The sql_table_name parameter indicates the underlying database table
   # to be used for all fields in this view.
-  sql_table_name: `joon-sandbox.nam_data.fct_ga_sessions`
+  sql_table_name: ${db_name}.${dataset_name}.fct_ga_sessions
     ;;
   # No primary key is defined for this view. In order to join this view in an Explore,
   # define primary_key: yes on a dimension that has no repeated values.
