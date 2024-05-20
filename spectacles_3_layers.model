@@ -1,0 +1,12 @@
+# Define the database connection to be used for this model.
+connection: "joon-sandbox"
+
+# include all the views
+include: "/logical/*.explore.lkml"
+
+# Datagroups define a caching policy for an Explore. To learn more,
+datagroup: spectacles_3_layers_default_datagroup {
+  max_cache_age: "1 hour"
+}
+
+persist_with: spectacles_3_layers_default_datagroup
